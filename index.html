@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloopBot v1 Controller</title>
+<style>
+  body { font-family: Arial; text-align: center; margin-top: 50px; }
+  button { font-size: 20px; padding: 10px 20px; margin: 10px; }
+</style>
+</head>
+<body>
+
+<h1>BloopBot v1 Controller</h1>
+<button onclick="connectMBot()">Connect mBot</button>
+<br>
+<button onclick="moveForward()">Forward</button>
+<button onclick="moveBackward()">Backward</button>
+<br>
+<button onclick="turnLeft()">Left</button>
+<button onclick="turnRight()">Right</button>
+<button onclick="stopMBot()">Stop</button>
+
+<script>
+let mbotDevice;
+let mbotServer;
+
+async function connectMBot() {
+  try {
+    mbotDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: 'mBot' }],
+      optionalServices: [0xffe0] // Bluetooth service for mBot
+    });
+    mbotServer = await mbotDevice.gatt.connect();
+    alert('Connected to mBot!');
+  } catch (error) {
+    console.error(error);
+    alert('Failed to connect: ' + error);
+  }
+}
+
+async function sendCommand(command) {
+  if (!mbotServer) {
+    alert('Not connected to mBot!');
+    return;
+  }
+  
+  try {
+    const service = await mbotServer.getPrimaryService(0xffe0);
+    const characteristic = await service.getCharacteristic(0xffe1);
+    
+    // Send simple command bytes (example: forward/back/left/right/stop)
+    let commandBytes;
+    switch(command) {
+      case 'forward': commandBytes = new Uint8Array([0x01]); break;
+      case 'backward': commandBytes = new Uint8Array([0x02]); break;
+      case 'left': commandBytes = new Uint8Array([0x03]); break;
+      case 'right': commandBytes = new Uint8Array([0x04]); break;
+      case 'stop': commandBytes = new Uint8Array([0x00]); break;
+    }
+
+    await characteristic.writeValue(commandBytes);
+  } catch (error) {
+    console.error('Command failed:', error);
+  }
+}
+
+function moveForward() { sendCommand('forward'); }
+function moveBackward() { sendCommand('backward'); }
+function turnLeft() { sendCommand('left'); }
+function turnRight() { sendCommand('right'); }
+function stopMBot() { sendCommand('stop'); }
+</script>
+
+</body>
+</html>
