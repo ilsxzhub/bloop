@@ -3,48 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BloopBot USB Controller</title>
+<title>BloopBot AI Controller</title>
 <style>
-  body { font-family: Arial; text-align: center; margin-top: 50px; }
-  button { font-size: 20px; padding: 10px 20px; margin: 10px; }
+  body { font-family: Arial; text-align: center; margin-top: 50px; background: #0d0d0d; color: #00ffcc; }
+  button { font-size: 20px; padding: 15px 25px; margin: 10px; border-radius: 10px; border: none; background: #222; color: #00ffcc; }
+  button:hover { background: #00ffcc; color: #0d0d0d; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<h1>BloopBot USB Controller</h1>
+<h1>BloopBot AI Controller</h1>
 
-<button onclick="move('forward')">Forward</button>
-<button onclick="move('backward')">Backward</button>
-<br>
-<button onclick="move('left')">Left</button>
-<button onclick="move('right')">Right</button>
-<button onclick="move('stop')">Stop</button>
+<div>
+  <button onclick="move('forward')">⬆ Forward</button>
+  <button onclick="move('backward')">⬇ Backward</button>
+</div>
+<div>
+  <button onclick="move('left')">⬅ Left</button>
+  <button onclick="move('right')">➡ Right</button>
+  <button onclick="move('stop')">⏹ Stop</button>
+</div>
 
 <script>
-async function move(command) {
-    try {
-        await fetch('http://localhost:5000/move', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({command})
-        });
-        speak(command);
-    } catch (error) {
-        alert('Failed to send command. Make sure Python server is running.');
-        console.error(error);
-    }
+async function move(direction) {
+    // Simulate sending command to mBot
+    console.log("BloopBot command:", direction);
+    
+    // Voice reaction using SpeechSynthesis API
+    speak(direction);
+    
+    // Simulate LED/light feedback
+    simulateLED(direction);
 }
 
-// Bloop voice
-function speak(command) {
-    const utterance = new SpeechSynthesisUtterance("Bloop! " + command + "!");
+function speak(action) {
+    const utterance = new SpeechSynthesisUtterance("Bloop! " + action + "!");
     utterance.lang = 'en-US';
     utterance.pitch = 1.2;
     utterance.rate = 1;
     speechSynthesis.speak(utterance);
 }
+
+function simulateLED(action) {
+    let color;
+    switch(action){
+        case 'forward': color = 'green'; break;
+        case 'backward': color = 'red'; break;
+        case 'left': color = 'blue'; break;
+        case 'right': color = 'cyan'; break;
+        case 'stop': color = 'yellow'; break;
+    }
+    document.body.style.background = color;
+}
 </script>
 
 </body>
 </html>
+
 
