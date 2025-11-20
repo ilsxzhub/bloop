@@ -12,14 +12,14 @@
 <body>
 
 <h1>BloopBot v1 Controller</h1>
-<button onclick="connectMBot()">Connect mBot</button>
+<button onclick="connectMBot()">Connect mBot (BLE V1.0_Z)</button>
 <br>
-<button onclick="moveForward()">Forward</button>
-<button onclick="moveBackward()">Backward</button>
+<button onclick="move('forward')">Forward</button>
+<button onclick="move('backward')">Backward</button>
 <br>
-<button onclick="turnLeft()">Left</button>
-<button onclick="turnRight()">Right</button>
-<button onclick="stopMBot()">Stop</button>
+<button onclick="move('left')">Left</button>
+<button onclick="move('right')">Right</button>
+<button onclick="move('stop')">Stop</button>
 
 <script>
 let mbotDevice;
@@ -28,10 +28,11 @@ let mbotServer;
 async function connectMBot() {
   try {
     mbotDevice = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'mBot' }],
-      optionalServices: [0xffe0] // Bluetooth service for mBot
+      filters: [{ name: 'BLE V1.0_Z' }], // your mBot BLE name
+      optionalServices: [0xffe0] // mBot BLE service
     });
     mbotServer = await mbotDevice.gatt.connect();
+    speak("BloopBot is connected!");
     alert('Connected to mBot!');
   } catch (error) {
     console.error(error);
@@ -48,8 +49,7 @@ async function sendCommand(command) {
   try {
     const service = await mbotServer.getPrimaryService(0xffe0);
     const characteristic = await service.getCharacteristic(0xffe1);
-    
-    // Send simple command bytes (example: forward/back/left/right/stop)
+
     let commandBytes;
     switch(command) {
       case 'forward': commandBytes = new Uint8Array([0x01]); break;
@@ -65,11 +65,26 @@ async function sendCommand(command) {
   }
 }
 
-function moveForward() { sendCommand('forward'); }
-function moveBackward() { sendCommand('backward'); }
-function turnLeft() { sendCommand('left'); }
-function turnRight() { sendCommand('right'); }
-function stopMBot() { sendCommand('stop'); }
+// Moves the mBot and makes Bloop speak
+function move(direction) {
+  sendCommand(direction);
+  switch(direction) {
+    case 'forward': speak("Bloop! Moving forward!"); break;
+    case 'backward': speak("Bloop! Backward!"); break;
+    case 'left': speak("Bloop! Turning left!"); break;
+    case 'right': speak("Bloop! Turning right!"); break;
+    case 'stop': speak("Bloop! Stopping!"); break;
+  }
+}
+
+// Web Speech API function
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.pitch = 1.2;
+  utterance.rate = 1;
+  speechSynthesis.speak(utterance);
+}
 </script>
 
 </body>
