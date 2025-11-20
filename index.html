@@ -8,7 +8,6 @@
   body { font-family: Arial; text-align: center; margin-top: 30px; background: #0d0d0d; color: #00ffcc; transition: background 0.3s; }
   #face { font-size: 100px; margin: 20px; }
   #status { font-size: 24px; margin: 10px; }
-  #log { font-size: 16px; margin-top: 20px; max-height: 200px; overflow-y: auto; text-align: left; padding: 0 20px; }
 </style>
 </head>
 <body>
@@ -16,83 +15,72 @@
 <h1>BloopBot AI</h1>
 <div id="face">😐</div>
 <p id="status">Bloop is idle</p>
-<div id="log"></div>
 
 <script>
-const OPENAI_API_KEY = "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"; // <-- put your API key here
-const actions = ['forward', 'backward', 'left', 'right', 'stop'];
+// Predefined actions and phrases
+const actions = ['forward','backward','left','right','stop'];
+const phrases = [
+    "Bloop! Moving forward!",
+    "Bloop! Backing up!",
+    "Bloop! Turning left!",
+    "Bloop! Turning right!",
+    "Bloop! Stopping!",
+    "Bloop! Obstacle detected, avoiding!",
+    "Bloop! Exploring!",
+    "Bloop! I'm alive!"
+];
 
 // Update face emoji
-function updateFace(emoji) { document.getElementById('face').innerText = emoji; }
+function updateFace(emoji){ document.getElementById('face').innerText = emoji; }
+
 // Update status text
-function updateStatus(text) { 
-    document.getElementById('status').innerText = text;
-    const log = document.getElementById('log');
-    log.innerHTML += `<div>> ${text}</div>`;
-    log.scrollTop = log.scrollHeight;
-}
+function updateStatus(text){ document.getElementById('status').innerText = text; }
+
 // LED/background simulation
-function simulateLED(action) {
+function simulateLED(action){
     let color;
     switch(action){
-        case 'forward': color = 'green'; break;
-        case 'backward': color = 'red'; break;
-        case 'left': color = 'blue'; break;
-        case 'right': color = 'cyan'; break;
-        case 'stop': color = 'yellow'; break;
-        default: color = '#0d0d0d';
+        case 'forward': color='green'; break;
+        case 'backward': color='red'; break;
+        case 'left': color='blue'; break;
+        case 'right': color='cyan'; break;
+        case 'stop': color='yellow'; break;
+        default: color='#0d0d0d';
     }
-    document.body.style.background = color;
+    document.body.style.background=color;
 }
+
 // Voice output
 function speak(text){
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.pitch = 1.2;
-    utterance.rate = 1;
+    utterance.lang='en-US';
+    utterance.pitch=1.2;
+    utterance.rate=1;
     speechSynthesis.speak(utterance);
 }
 
-// Send prompt to OpenAI API
-async function getOpenAIResponse(prompt) {
-    try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${OPENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [{role: "user", content: prompt}],
-                max_tokens: 60
-            })
-        });
-        const data = await response.json();
-        return data.choices[0].message.content.trim();
-    } catch(e) {
-        console.error(e);
-        return "Bloop encountered an error!";
-    }
-}
-
 // Autonomous loop
-async function autonomousBloop() {
-    // Pick a random action
+function autonomousBloop(){
+    // Random action
     const action = actions[Math.floor(Math.random() * actions.length)];
 
-    // Simulate LED & face
+    // Random phrase
+    let phrase = phrases[Math.floor(Math.random() * phrases.length)];
+
+    // Simulate face/LED
+    if(Math.random() < 0.2){
+        updateFace('😲'); // surprise
+    } else {
+        updateFace('😃'); // happy
+    }
     simulateLED(action);
-    updateFace('😃');
-    updateStatus(`Bloop is about to ${action}`);
 
-    // Ask OpenAI what to say about this action
-    const response = await getOpenAIResponse(`Bloop is about to ${action}. Say something fun and short!`);
-    updateStatus(response);
-    speak(response);
+    // Update status and speak
+    updateStatus(phrase);
+    speak(phrase);
 
-    // Repeat every 2-4 seconds randomly
-    setTimeout(autonomousBloop, 2000 + Math.random() * 2000);
+    // Repeat every 2-4 seconds
+    setTimeout(autonomousBloop, 2000 + Math.random()*2000);
 }
 
 // Start Bloop
@@ -101,6 +89,7 @@ autonomousBloop();
 
 </body>
 </html>
+
 
 
 
