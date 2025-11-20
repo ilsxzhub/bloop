@@ -5,15 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BloopBot AI Controller</title>
 <style>
-  body { font-family: Arial; text-align: center; margin-top: 50px; background: #0d0d0d; color: #00ffcc; }
-  button { font-size: 20px; padding: 15px 25px; margin: 10px; border-radius: 10px; border: none; background: #222; color: #00ffcc; }
+  body { font-family: Arial; text-align: center; margin-top: 30px; background: #0d0d0d; color: #00ffcc; transition: background 0.3s; }
+  button { font-size: 18px; padding: 12px 20px; margin: 8px; border-radius: 10px; border: none; background: #222; color: #00ffcc; }
   button:hover { background: #00ffcc; color: #0d0d0d; cursor: pointer; }
+  input { font-size: 16px; padding: 8px; width: 60%; margin-top: 10px; border-radius: 8px; border: 1px solid #00ffcc; background: #111; color: #00ffcc; }
 </style>
 </head>
 <body>
 
 <h1>BloopBot AI Controller</h1>
 
+<!-- Movement Buttons -->
 <div>
   <button onclick="move('forward')">⬆ Forward</button>
   <button onclick="move('backward')">⬇ Backward</button>
@@ -24,26 +26,31 @@
   <button onclick="move('stop')">⏹ Stop</button>
 </div>
 
+<!-- AI Input -->
+<div>
+  <input id="aiPrompt" type="text" placeholder="Type a command for Bloop..." />
+  <button onclick="sendAI()">Send</button>
+</div>
+
 <script>
-async function move(direction) {
-    // Simulate sending command to mBot
+// Move and simulate LED/voice
+function move(direction) {
     console.log("BloopBot command:", direction);
-    
-    // Voice reaction using SpeechSynthesis API
-    speak(direction);
-    
-    // Simulate LED/light feedback
+    speak("Bloop! " + direction + "!");
     simulateLED(direction);
+    simulateObstacleReaction(direction);
 }
 
-function speak(action) {
-    const utterance = new SpeechSynthesisUtterance("Bloop! " + action + "!");
+// Voice
+function speak(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
     utterance.pitch = 1.2;
     utterance.rate = 1;
     speechSynthesis.speak(utterance);
 }
 
+// Background LED simulation
 function simulateLED(action) {
     let color;
     switch(action){
@@ -55,9 +62,29 @@ function simulateLED(action) {
     }
     document.body.style.background = color;
 }
+
+// AI Text Input
+function sendAI() {
+    const input = document.getElementById('aiPrompt').value.trim();
+    if (!input) return;
+    speak("Bloop says: " + input);
+    document.getElementById('aiPrompt').value = '';
+}
+
+// Simulated sensor reactions
+function simulateObstacleReaction(direction) {
+    // Randomly simulate an obstacle
+    if (Math.random() < 0.2 && direction !== 'stop') {
+        setTimeout(() => {
+            speak("Bloop! Obstacle ahead! Turning!");
+            simulateLED('left');
+        }, 500);
+    }
+}
 </script>
 
 </body>
 </html>
+
 
 
