@@ -3,18 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BloopBot Autonomous AI + Physical</title>
+<title>BloopBot AI</title>
 <style>
   body { font-family: Arial; text-align: center; margin-top: 30px; background: #0d0d0d; color: #00ffcc; transition: background 0.3s; }
+  #face { font-size: 100px; margin: 20px; }
+  #status { font-size: 24px; margin: 10px; }
 </style>
 </head>
 <body>
 
-<h1>BloopBot AI Controller</h1>
-<p>Bloop is thinking and moving...</p>
+<h1>BloopBot AI</h1>
+<div id="face">😐</div>
+<p id="status">Bloop is idle</p>
 
 <script>
-// Movement actions and phrases
+// Actions and phrases
 const actions = ['forward', 'backward', 'left', 'right', 'stop'];
 const phrases = [
     "Bloop! Moving forward!",
@@ -27,23 +30,25 @@ const phrases = [
     "Bloop! I'm alive!"
 ];
 
-// Simulated AI + Physical Command Loop
+// Start autonomous AI loop
 function autonomousBloop() {
     const action = actions[Math.floor(Math.random() * actions.length)];
     let phrase;
 
-    // 20% chance of obstacle detection
+    // 20% chance of obstacle
     if (Math.random() < 0.2 && action !== 'stop') {
         phrase = "Bloop! Obstacle ahead! Turning!";
         simulateLED('left');
-        sendCommandTomBot('left');
+        updateFace('😲'); // surprise face
     } else {
         phrase = phrases[Math.floor(Math.random() * phrases.length)];
         simulateLED(action);
-        sendCommandTomBot(action);
+        updateFace('😃'); // happy face
     }
 
     speak(phrase);
+    updateStatus(phrase);
+
     setTimeout(autonomousBloop, 1000 + Math.random() * 2000);
 }
 
@@ -56,7 +61,7 @@ function speak(text) {
     speechSynthesis.speak(utterance);
 }
 
-// LED simulation
+// LED/background simulation
 function simulateLED(action) {
     let color;
     switch(action){
@@ -69,18 +74,23 @@ function simulateLED(action) {
     document.body.style.background = color;
 }
 
-// **Send commands to mBot via mBlock Remote Control / BLE**
-function sendCommandTomBot(action) {
-    // Example placeholder:
-    // For real mBot: map this function to mBlock Bluetooth blocks
-    console.log("Send to mBot:", action);
+// Update action text
+function updateStatus(text) {
+    document.getElementById('status').innerText = text;
 }
 
+// Update face emoji
+function updateFace(emoji) {
+    document.getElementById('face').innerText = emoji;
+}
+
+// Start Bloop
 autonomousBloop();
 </script>
 
 </body>
 </html>
+
 
 
 
