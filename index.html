@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BloopBot v1 Controller</title>
+<title>BloopBot USB Controller</title>
 <style>
   body { font-family: Arial; text-align: center; margin-top: 50px; }
   button { font-size: 20px; padding: 10px 20px; margin: 10px; }
@@ -11,9 +11,8 @@
 </head>
 <body>
 
-<h1>BloopBot v1 Controller</h1>
-<button onclick="connectMBot()">Connect mBot (BLE V1.0_Z)</button>
-<br>
+<h1>BloopBot USB Controller</h1>
+
 <button onclick="move('forward')">Forward</button>
 <button onclick="move('backward')">Backward</button>
 <br>
@@ -22,70 +21,30 @@
 <button onclick="move('stop')">Stop</button>
 
 <script>
-let mbotDevice;
-let mbotServer;
-
-async function connectMBot() {
-  try {
-    mbotDevice = await navigator.bluetooth.requestDevice({
-      filters: [{ name: 'BLE V1.0_Z' }], // your mBot BLE name
-      optionalServices: [0xffe0] // mBot BLE service
-    });
-    mbotServer = await mbotDevice.gatt.connect();
-    speak("BloopBot is connected!");
-    alert('Connected to mBot!');
-  } catch (error) {
-    console.error(error);
-    alert('Failed to connect: ' + error);
-  }
-}
-
-async function sendCommand(command) {
-  if (!mbotServer) {
-    alert('Not connected to mBot!');
-    return;
-  }
-  
-  try {
-    const service = await mbotServer.getPrimaryService(0xffe0);
-    const characteristic = await service.getCharacteristic(0xffe1);
-
-    let commandBytes;
-    switch(command) {
-      case 'forward': commandBytes = new Uint8Array([0x01]); break;
-      case 'backward': commandBytes = new Uint8Array([0x02]); break;
-      case 'left': commandBytes = new Uint8Array([0x03]); break;
-      case 'right': commandBytes = new Uint8Array([0x04]); break;
-      case 'stop': commandBytes = new Uint8Array([0x00]); break;
+async function move(command) {
+    try {
+        await fetch('http://localhost:5000/move', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({command})
+        });
+        speak(command);
+    } catch (error) {
+        alert('Failed to send command. Make sure Python server is running.');
+        console.error(error);
     }
-
-    await characteristic.writeValue(commandBytes);
-  } catch (error) {
-    console.error('Command failed:', error);
-  }
 }
 
-// Moves the mBot and makes Bloop speak
-function move(direction) {
-  sendCommand(direction);
-  switch(direction) {
-    case 'forward': speak("Bloop! Moving forward!"); break;
-    case 'backward': speak("Bloop! Backward!"); break;
-    case 'left': speak("Bloop! Turning left!"); break;
-    case 'right': speak("Bloop! Turning right!"); break;
-    case 'stop': speak("Bloop! Stopping!"); break;
-  }
-}
-
-// Web Speech API function
-function speak(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'en-US';
-  utterance.pitch = 1.2;
-  utterance.rate = 1;
-  speechSynthesis.speak(utterance);
+// Bloop voice
+function speak(command) {
+    const utterance = new SpeechSynthesisUtterance("Bloop! " + command + "!");
+    utterance.lang = 'en-US';
+    utterance.pitch = 1.2;
+    utterance.rate = 1;
+    speechSynthesis.speak(utterance);
 }
 </script>
 
 </body>
 </html>
+
